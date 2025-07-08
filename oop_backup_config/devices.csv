@@ -1,0 +1,3 @@
+hostname,username,password,device_type
+route-views.routeviews.org,rviews,rviews,cisco_ios_telnet
+route-server.ip.att.net,rviews,rviews,juniper_junos_telnet
