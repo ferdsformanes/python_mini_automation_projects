@@ -2,10 +2,10 @@
 import pandas as pd
 from netmiko import ConnectHandler
 from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed  # For multithreading
+from concurrent.futures import ThreadPoolExecutor, as_completed  # For concurrent execution using threads
 import time  # For measuring execution time
 
-# Step 2: Define the Base Class
+# Step 2: Define the Base Class for Network Devices
 class NetworkDevice:
     def __init__(self, hostname, username, password):
         self.hostname = hostname
@@ -13,14 +13,12 @@ class NetworkDevice:
         self.password = password
 
     def backup_config(self):
-        pass  # Placeholder to be overridden
-
+        pass  # To be implemented by subclasses
     def __str__(self):
-        # Defines how the object is shown when printed
+        # Defines string representation of the object
         return f"{self.__class__.__name__}(hostname={self.hostname})"
 
-
-# Step 3: Define the CiscoDevice Class
+# Step 3: Define the CiscoDevice Class (inherits from NetworkDevice)
 class CiscoDevice(NetworkDevice):
     def __init__(self, hostname, username="rviews", password=""):
         super().__init__(hostname, username, password)
@@ -34,7 +32,7 @@ class CiscoDevice(NetworkDevice):
                 username=self.username,
                 password=self.password
             )
-            output = connection.send_command("show version")
+            output = connection.send_command("show version")  # Fetch device version info
             connection.disconnect()
 
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
@@ -42,13 +40,11 @@ class CiscoDevice(NetworkDevice):
 
             with open(filename, "w") as file:
                 file.write(output)
-
             return f"Cisco: {self.hostname} backup saved to {filename}"
         except Exception as e:
             return f"Cisco: Failed to back up {self.hostname}: {e}"
 
-
-# Step 4: Define the JuniperDevice Class
+# Step 4: Define the JuniperDevice Class (inherits from NetworkDevice)
 class JuniperDevice(NetworkDevice):
     def __init__(self, hostname, username="rviews", password=""):
         super().__init__(hostname, username, password)
@@ -62,7 +58,7 @@ class JuniperDevice(NetworkDevice):
                 username=self.username,
                 password=self.password
             )
-            output = connection.send_command("show bgp summary")
+            output = connection.send_command("show bgp summary")  # Fetch BGP summary
             connection.disconnect()
 
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
@@ -70,17 +66,15 @@ class JuniperDevice(NetworkDevice):
 
             with open(filename, "w") as file:
                 file.write(output)
-
             return f"Juniper: {self.hostname} backup saved to {filename}"
         except Exception as e:
             return f"Juniper: Failed to back up {self.hostname}: {e}"
 
-
-# Step 5: Read Devices from CSV using Pandas
+# Step 5: Read Device Information from CSV using Pandas
 devices = []
-df = pd.read_csv("devices.csv")  # Load CSV into DataFrame
+df = pd.read_csv("devices.csv")  # Load device data from CSV file
 
-for _, row in df.iterrows():  # Loop through each row
+for _, row in df.iterrows():  # Iterate over each row in the DataFrame
     if row["device_type"] == "cisco_ios_telnet":
         device = CiscoDevice(hostname=row["hostname"], username=row["username"], password=row["password"])
     elif row["device_type"] == "juniper_junos_telnet":
@@ -90,32 +84,35 @@ for _, row in df.iterrows():  # Loop through each row
         continue
     devices.append(device)
 
-# Step 6: Back Up All Devices in Parallel (Multithreading + Timer)
+# Step 6: Back Up All Devices in Parallel Using Multithreading
 
-start_time = time.time()
+start_time = time.time()  # Start timer
 
 success_count = 0
 failure_count = 0
 
-# Store results here
-results = []
-
-# Create a ThreadPoolExecutor with 5 workers (5 devices at a time)
+# Create a ThreadPoolExecutor with 5 threads
 with ThreadPoolExecutor(max_workers=5) as executor:
-    # Submit each device backup task to the executor
+    # Submit backup tasks for each device
     futures = {executor.submit(device.backup_config): device for device in devices}
     
-    # Process results as each device finishes
+    for future, device in futures.items():
+        print(f"Key: {future}, Value: {device}")  # Debug print to show mapping
+
+    # Process results as they complete
     for future in as_completed(futures):
-        device = futures[future]  # Match future back to its device
+        device = futures[future]  # Retrieve the corresponding device
+        print(f"Print {device} for testing")  # Debug print
         try:
-            result = future.result()  # Get function return value
-            success_count += 1        # Count as success if no error
+            result = future.result()  # Get the result of the backup
+            if "backup saved to" in result:
+                success_count += 1
+            else:
+                failure_count += 1
         except Exception as e:
             result = f"{device.hostname} backup failed: {e}"
-            failure_count += 1        # Count as failure
-        results.append(result)
-        print(result)  # Print immediately when done
+            failure_count += 1
+        print(result)
 
 # End timer
 end_time = time.time()
