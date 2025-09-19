@@ -11,18 +11,27 @@
 
 from netmiko import ConnectHandler
 
-def connect_and_run_function(hostname, username, password, command, device_type="cisco_ios_telnet"):
-    device = {
-        "device_type": device_type,
-        "host": hostname,
-        "username": username,
-        "password": password,
-    }
-    with ConnectHandler(**device) as conn:
-        output = conn.send_command(command)
-    return output
+# # This is a USER-DEFINED FUNCTION
+# def connect_and_run_function(hostname, username, password, command, device_type="cisco_ios_telnet"):
+#     device = {
+#         "device_type": device_type,
+#         "host": hostname,
+#         "username": username,
+#         "password": password,
+#     }
+#     with ConnectHandler(**device) as conn:
+#         output = conn.send_command(command)
+#     return output
 
-# -------------------------------------------------------------------------------
+
+# # Example: Built-in Function
+# device_ips = ["10.0.0.5", "192.168.1.10", "172.16.0.1"]
+
+# # len() → Built-in Function provided by Python
+# print("Total devices to connect:", len(device_ips))
+
+
+# -----------------------------------------------
 # 2. What is a Method?
 # --------------------
 # - A method is similar to a function, but it is defined inside a class.
@@ -36,8 +45,8 @@ class NetworkDevice:
         self.password = password
         self.device_type = device_type
 
+    # USER-DEFINED METHOD
     def connect_and_run(self, command):
-        from netmiko import ConnectHandler
         device = {
             "device_type": self.device_type,
             "host": self.hostname,
@@ -48,18 +57,29 @@ class NetworkDevice:
             output = conn.send_command(command)
         return output
 
-# ---------------------------------------------------------------
 
+# # Example: Built-in Method
+# sample_output = "Gig0/0    10.0.0.1    YES manual up up"
+
+# # split() → Built-in Method of Python’s str class
+# fields = sample_output.split()
+# print("Interface:", fields[0])
+# print("IP Address:", fields[1])
+# print("Status:", fields[-2], fields[-1])
+
+
+# ---------------------------------------------------------------
 # 3. Using Functions vs Methods
 # -----------------------------
 
-print(connect_and_run_function("route-views.routeviews.org", "rviews", "rviews", "show version"))
+# # Calling a user-defined function
+# print(connect_and_run_function("route-views.routeviews.org", "rviews", "rviews", "show version"))
 
+# Creating an object and calling a user-defined method
 device1 = NetworkDevice("route-views.routeviews.org", "rviews", "rviews")
 print(device1.connect_and_run("show version"))
 
 # ---------------------------------------------------------------
-# Summary
-# -------
-# - Functions are independent blocks of code.
-# - Methods are functions that belong to a class and operate on objects.
+# Summary:          
+# - Functions are standalone and not tied to any object.
+# - Methods are tied to objects and can access object data.
