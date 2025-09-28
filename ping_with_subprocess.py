@@ -54,6 +54,8 @@ output_file = f"ping_results_{timestamp}.txt"
 with open(output_file, "w") as f:
     for device in devices:
         result = ping_device(device)
-        print(result)           
+        print(type(ping_device(device))) 
+        print(result)
+        print(type(f))           
         f.write(result + "\n")
 
