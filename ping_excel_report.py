@@ -2,11 +2,11 @@
 import subprocess
 import pandas as pd
 from datetime import datetime
+import platform
 
 # ---------------------------------------------------------
 # READ DEVICES FROM EXCEL
 # ---------------------------------------------------------
-# Your Excel file must have a column "IP"
 devices_df = pd.read_excel("devices.xlsx")
 devices = devices_df["IP"].tolist()
 
@@ -15,11 +15,11 @@ devices = devices_df["IP"].tolist()
 # PING FUNCTION
 # ---------------------------------------------------------
 def ping_device(ip):
-    """Ping a single device and return result + full output."""
     try:
-        # Windows uses 'ping -n', Linux/Mac uses 'ping -c'
+        param = "-n" if platform.system().lower() == "windows" else "-c"
+        print(f"Printing param for debugging: {param}")
         result = subprocess.run(
-            ["ping", "-n", "4", ip],
+            ["ping", param, "4", ip],
             capture_output=True,
             text=True,
             timeout=5
@@ -27,6 +27,7 @@ def ping_device(ip):
 
         if result.returncode == 0:
             return "Reachable", result.stdout.strip()
+        
         else:
             return "Unreachable", result.stderr.strip()
 
