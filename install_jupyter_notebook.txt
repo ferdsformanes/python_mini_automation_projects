@@ -1,0 +1,28 @@
+# How to install Jupyter Notebook in Windows
+
+# Step 1: Verify that Python is installed
+python --version
+
+# Step 2: Install Jupyter Notebook using pip
+pip install notebook
+
+# Step 3: Run Jupyter Notebook
+jupyter notebook
+
+
+# --- Inside Jupyter Notebook ---
+import pandas as pd
+
+data = {
+    "Device": ["Router1", "Switch1", "Firewall1"],
+    "IP Address": ["192.168.1.1", "192.168.1.2", "192.168.1.254"],
+    "Status": ["Up", "Up", "Down"],
+    "Location": ["Data Center", "Office 1", "HQ"]
+}
+
+df = pd.DataFrame(data)
+display(df)
+
+
+# Step 4: To stop the Jupyter Notebook server, press Ctrl + C in the Command Prompt window.
+
